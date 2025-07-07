@@ -217,6 +217,15 @@ function attachHoverListeners(box) {
     inner.classList.remove("hover-highlight");
   });
 
+  inner.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const stepId = parseInt(box.getAttribute("data-id"));
+    const step = stepsList.find(s => s.id === stepId);
+    if (step) {
+      showActionsModal(step);
+    }
+  });
+
   const transitionBar = box.querySelector(".transition");
   transitionBar.addEventListener("mouseenter", () => {
     transitionBar.classList.add("hover-highlight");
@@ -428,6 +437,86 @@ function showReceptivityModal(transition, transitionBar) {
     document.body.removeChild(overlay);
   });
 }
+
+function showActionsModal(step) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  modal.innerHTML = `
+    <h2>Ações do Step ${step.id}</h2>
+    <div id="actions-container"></div>
+    <button id="add-action">Adicionar Ação</button>
+    <div style="margin-top:10px; text-align:right;">
+      <button id="save-actions">Salvar Todas</button>
+      <button id="cancel-actions">Cancelar</button>
+    </div>
+  `;
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  const actionsContainer = modal.querySelector("#actions-container");
+
+  // Função para criar campos de uma ação
+  function createActionFields(action = {}) {
+    const div = document.createElement("div");
+    div.className = "action-fields";
+    div.style.border = "1px solid #ccc";
+    div.style.padding = "5px";
+    div.style.marginBottom = "5px";
+
+    div.innerHTML = `
+      <input type="text" placeholder="ID" value="${action.id || ''}" style="width: 60px; margin-right:3px;">
+      <input type="text" placeholder="Type" value="${action.type || ''}" style="width: 80px; margin-right:3px;">
+      <input type="text" placeholder="Commands (csv)" value="${(action.commands || []).join(',')}" style="width: 120px; margin-right:3px;">
+      <input type="text" placeholder="Qualifier" value="${action.qualifier || ''}" style="width: 80px; margin-right:3px;">
+      <input type="text" placeholder="Description" value="${action.description || ''}" style="width: 100px; margin-right:3px;">
+      <button class="remove-action">X</button>
+    `;
+
+    div.querySelector(".remove-action").addEventListener("click", () => {
+      actionsContainer.removeChild(div);
+    });
+
+    actionsContainer.appendChild(div);
+  }
+
+  // Carregar ações existentes
+  if (step.actions.length > 0) {
+    step.actions.forEach(a => createActionFields(a));
+  } else {
+    createActionFields();
+  }
+
+  modal.querySelector("#add-action").addEventListener("click", () => {
+    createActionFields();
+  });
+
+  modal.querySelector("#save-actions").addEventListener("click", () => {
+    const actionDivs = [...actionsContainer.querySelectorAll(".action-fields")];
+    const newActions = actionDivs.map(div => {
+      const inputs = div.querySelectorAll("input");
+      return new Action({
+        id: inputs[0].value.trim(),
+        type: inputs[1].value.trim(),
+        commands: inputs[2].value.trim() ? inputs[2].value.trim().split(",").map(s=>s.trim()) : [],
+        qualifier: inputs[3].value.trim(),
+        description: inputs[4].value.trim()
+      });
+    });
+    step.actions = newActions;
+    document.body.removeChild(overlay);
+    console.log(`Step ${step.id} - ${newActions.length} ações salvas:`, newActions);
+  });
+
+  modal.querySelector("#cancel-actions").addEventListener("click", () => {
+    document.body.removeChild(overlay);
+  });
+}
+
 
 
 // Executar a cada 200 ms

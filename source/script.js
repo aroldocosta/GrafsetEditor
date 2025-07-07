@@ -52,7 +52,7 @@ canvas.addEventListener("drop", e => {
 
   const inner = clone.querySelector(".inner-rect");
   if (state === "active") {
-    inner.style.border = "4px double darkblue";
+    inner.style.border = "5px double darkblue";
   }
 
   canvas.appendChild(clone);
@@ -327,37 +327,13 @@ function removeStepConnection(connection) {
   toStep.inputs = toStep.inputs.filter(id => id !== fromId);
 }
 
-testBtn.addEventListener("click", () => {
-  const boxes = canvas.querySelectorAll(".box");
-  let i = 0;
-  function activateNext() {
-    if (i > 0) {
-      const prev = boxes[i - 1];
-      prev.dataset.state = "inactive";
-      prev.querySelector(".inner-rect").style.border = "";
-    }
-    if (i < boxes.length) {
-      const current = boxes[i];
-      current.dataset.state = "active";    
-      let id = Number(current.dataset.id);                                
-      current.querySelector(".inner-rect").style.border = stepsList[id - 1].type == "start_step" 
-                                                              ? "4px double darkblue" 
-                                                              : "2px solid darkblue";
-
-      i++;
-      setTimeout(activateNext, 1000);
-    }
-  }
-  activateNext();
-});
-
 function atualizarVisualizacaoSteps() {
   stepsList.forEach(step => {
     const inner = step.element.querySelector(".inner-rect");
     if (step.state === "active") {
       inner.style.border = step.type === "start_step"
-        ? "4px double darkblue"
-        : "2px solid darkblue";
+        ? "5px double darkblue"
+        : "3px solid darkblue";
     } else {
       inner.style.border = "";
     }
@@ -380,4 +356,4 @@ function atualizarVisualizacaoSteps() {
 }
 
 // Executar a cada 200 ms
-setInterval(atualizarVisualizacaoSteps, 200);
+setInterval(atualizarVisualizacaoSteps, 100);

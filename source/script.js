@@ -3,7 +3,6 @@ const palette = document.getElementById("palette");
 const testBtn = document.getElementById("test-states");
 let currentConnection = null;
 const connections = [];
-const transitionsList = [];
 const stepsList = [];
 let transitionCounter = 0;
 let boxCounter = 0;
@@ -307,11 +306,11 @@ function addStepConnection(fromBox, toBox) {
   const toStep = stepsList.find(s => s.id === toId);
   if (!fromStep || !toStep) return;
 
-  if (!fromStep.outputs.includes(toId)) {
-    fromStep.outputs.push(toId);
+  if (!fromStep.outputs.includes(toStep)) {
+    fromStep.outputs.push(toStep);
   }
-  if (!toStep.inputs.includes(fromId)) {
-    toStep.inputs.push(fromId);
+  if (!toStep.inputs.includes(fromStep)) {
+    toStep.inputs.push(fromStep);
   }
 }
 
@@ -345,7 +344,6 @@ testBtn.addEventListener("click", () => {
                                                               ? "4px double darkblue" 
                                                               : "2px solid darkblue";
 
-      console.log("Box state: ", current)
       i++;
       setTimeout(activateNext, 1000);
     }
@@ -356,43 +354,30 @@ testBtn.addEventListener("click", () => {
 function atualizarVisualizacaoSteps() {
   stepsList.forEach(step => {
     const inner = step.element.querySelector(".inner-rect");
-    // if (step.state === "active") {
-    //   inner.style.border = step.type === "start_step"
-    //     ? "4px double darkblue"
-    //     : "2px solid darkblue";
-    // } else {
-    //   inner.style.border = "";
-    // }
+    if (step.state === "active") {
+      inner.style.border = step.type === "start_step"
+        ? "4px double darkblue"
+        : "2px solid darkblue";
+    } else {
+      inner.style.border = "";
+    }
 
-    step.transitions.forEach(trId => {
-      transitionsList.filter(t => t.id == trId).map(t => {
-        if(t.triggered) {
-          console.log(t.id + " is Triggered");
+    step.transitions.forEach(t => {
 
-          if(t.triggered) {
-            let inputIds = t.inputSteps;
-            let outputIds = t.outputSteps;
+      if(step.state == "active" && t.triggered == true ) {
+        t.triggered = false;
+        console.log("Transition " + t.id + " State " + t.triggered);
+        step.state = "inactive";
 
-            console.log("InputStepsIds", inputIds);
-            console.log("OutputStepsIds", outputIds);
-
-            inputIds.forEach(i => {
-              stepsList.filter(s => i == s.id).state = "inactive";
-            })
-
-            outputIds.forEach(o => {
-              stepsList.filter(s => i == s.id).state = "active";
-            });
+        step.outputs.forEach(s => {
+          if(step.state == "inactive") {
+            s.state = "active";
           }
-        } else {
-          //console.log(t.id + " is NOT Triggered");
-        }
-      });
+        });
+      }      
     })
-
-
   });
 }
 
-// Executar a cada 1000 ms
-setInterval(atualizarVisualizacaoSteps, 1000);
+// Executar a cada 200 ms
+setInterval(atualizarVisualizacaoSteps, 200);

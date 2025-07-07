@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Drag & Drop GRAFCET</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="palette">
+    <div class="palette-title">Start</div>
+    <div class="box start_step" draggable="true" data-state="inactive">
+      <div class="line-top start"></div>
+      <div class="inner-rect"></div>
+      <div class="line-bottom start"></div>
+      <div class="transition start"></div>
+      <div class="connector top start"></div>
+      <div class="connector bottom start"></div>
+    </div>
+
+    <div class="palette-title">Active</div>
+    <div class="box active_step" draggable="true" data-state="inactive">
+      <div class="line-top active"></div>
+      <div class="inner-rect"></div>
+      <div class="line-bottom active"></div>
+      <div class="transition active"></div>
+      <div class="connector top active"></div>
+      <div class="connector bottom active"></div>
+    </div>
+    <button id="test-states">Testar States</button>
+  </div>
+
+  <div id="canvas"></div>
+
+  <script src="step.js"></script>
+  <script src="transition.js"></script>
+  <script src="action.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

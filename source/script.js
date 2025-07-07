@@ -216,7 +216,44 @@ function attachHoverListeners(box) {
   box.addEventListener("mouseleave", () => {
     inner.classList.remove("hover-highlight");
   });
+
+  const transitionBar = box.querySelector(".transition");
+  transitionBar.addEventListener("mouseenter", () => {
+    transitionBar.classList.add("hover-highlight");
+  });
+  transitionBar.addEventListener("mouseleave", () => {
+    transitionBar.classList.remove("hover-highlight");
+  });
+
+  // Novo listener de click para abrir o modal
+  transitionBar.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const stepId = parseInt(box.getAttribute("data-id"));
+    const step = stepsList.find(s => s.id === stepId);
+    if (!step || !step.transitions || step.transitions.length === 0) {
+      console.warn("Nenhuma transição encontrada para este step.");
+      return;
+    }
+    const transition = step.transitions[0]; // assumindo uma única transição
+    showReceptivityModal(transition, transitionBar);
+  });
+  // Criar elemento <span> que mostrará a receptividade
+  const receptivityLabel = document.createElement("span");
+  receptivityLabel.className = "receptivity-label";
+  receptivityLabel.textContent = "";
+  receptivityLabel.style.position = "absolute";
+  receptivityLabel.style.left = "30px"; // à direita do tracinho
+  receptivityLabel.style.top = "50%";
+  receptivityLabel.style.transform = "translateY(-50%)";
+  receptivityLabel.style.fontSize = "14px";
+  receptivityLabel.style.color = "#333";
+  receptivityLabel.style.fontWeight = "bold";
+  receptivityLabel.style.pointerEvents = "none";
+  transitionBar.appendChild(receptivityLabel);
+
 }
+
 
 function attachRemoveListener(box) {
   box.addEventListener("dblclick", () => {
@@ -354,6 +391,44 @@ function atualizarVisualizacaoSteps() {
     })
   });
 }
+
+function showReceptivityModal(transition, transitionBar) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  modal.innerHTML = `
+    <h2>Editar Receptividade</h2>
+    <input type="text" id="receptivity-input" placeholder="Digite a receptividade" value="${transition.receptivity}">
+    <div style="text-align:right;">
+      <button id="save-receptivity">Salvar</button>
+      <button id="cancel-receptivity">Cancelar</button>
+    </div>
+  `;
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  modal.querySelector("#save-receptivity").addEventListener("click", () => {
+    const value = modal.querySelector("#receptivity-input").value.trim();
+    transition.setReceptivity(value);
+
+    const label = transitionBar.querySelector(".receptivity-label");
+    if (label) {
+      label.textContent = value;
+    }
+
+    document.body.removeChild(overlay);
+    console.log(`Receptividade da transição ${transition.id} atualizada para: "${value}"`);
+  });
+
+  modal.querySelector("#cancel-receptivity").addEventListener("click", () => {
+    document.body.removeChild(overlay);
+  });
+}
+
 
 // Executar a cada 200 ms
 setInterval(atualizarVisualizacaoSteps, 100);

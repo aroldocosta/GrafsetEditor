@@ -30,7 +30,7 @@
     height: var(--box_side);
     background: #fff;
     position: relative;
-    cursor: grab;
+    cursor: pointer;
     margin-bottom: 10px;
   }
   
@@ -121,12 +121,12 @@
   .transition {
     position: absolute;
     width: 25px;
-    height: 4px;
+    height: 6px;
     background: grey;
     top: calc(var(--box_side) - 20px);
-    pointer-events: none;
     z-index: 1;
     left: calc(50% - 14%);
+    cursor: pointer;
   }
   
   #canvas {
@@ -166,5 +166,14 @@
     margin-top: 5px;
     padding: 4px 8px;
     font-size: 12px;
+  }
+  
+  .box .transition.hover-highlight {
+    background: dodgerblue;
+    height: 8px;
+  }
+
+  .receptivity-label {
+    white-space: nowrap;
   }
   

@@ -578,5 +578,9 @@ function showActionsModal(step) {
   });
 }
 
+function doCompile() {
+  compile(stepsList);
+}
+
 // Executar a cada 200 ms
 setInterval(updateStepsView, 100);

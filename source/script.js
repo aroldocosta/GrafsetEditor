@@ -373,7 +373,11 @@ function removeStepConnection(connection) {
   toStep.inputs = toStep.inputs.filter(id => id !== fromId);
 }
 
-function atualizarVisualizacaoSteps() {
+function updateStepsView() {
+  // Antes de atualizar, limpa todos os elementos de ação existentes
+  const oldActionBoxes = canvas.querySelectorAll(".action-box, .action-line, .action-tooltip");
+  oldActionBoxes.forEach(el => el.remove());
+
   stepsList.forEach(step => {
     const inner = step.element.querySelector(".inner-rect");
     if (step.state === "active") {
@@ -384,22 +388,79 @@ function atualizarVisualizacaoSteps() {
       inner.style.border = "";
     }
 
+    // Renderizar Actions ao lado direito do Step
+    if (step.actions && step.actions.length > 0) {
+      const rect = step.element.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+
+      const baseLeft = parseFloat(step.element.style.left) + 110; // desloca para direita
+      const baseTop = parseFloat(step.element.style.top) + 20; // alinhamento vertical
+
+      step.actions.forEach((action, idx) => {
+
+        if(idx == 0) { //Primeia ação
+        // Linha de conexão
+          const line = document.createElement("div");
+          line.className = "action-line";
+          line.style.left = (baseLeft - 30 + idx * 110) + "px";
+          line.style.top = (baseTop + 20) + "px";
+          canvas.appendChild(line);
+        }
+
+        // Caixa da ação
+        const box = document.createElement("div");
+        box.className = "action-box";
+        box.style.left = (baseLeft - 10 + idx * 110) + "px";
+        box.style.top = (baseTop - 8) + "px";
+        box.style.fontSize = "1.1em";
+        box.style.textAlign = "center";
+        box.style.fontStyle = "italic";
+        box.style.fontWeight = "bold";
+        box.style.overflowWrap = "anywhere";
+
+        const commandsText = action.commands.map(c => `${c}`).join(", ");
+        box.textContent = commandsText;
+        box.textContent.marginTop = "20px";
+
+        // Tooltip ao passar o mouse
+        box.addEventListener("mouseenter", (e) => {
+          const tooltip = document.createElement("div");
+          tooltip.className = "action-tooltip";
+          tooltip.innerHTML = `
+            <strong>ID:</strong> ${action.id || "-"}<br>
+            <strong>Type:</strong> ${action.type || "-"}<br>
+            <strong>Qualifier:</strong> ${action.qualifier || "-"}<br>
+            <strong>Description:</strong> ${action.description || "-"}
+          `;
+          tooltip.style.left = (parseFloat(box.style.left) + 110) + "px";
+          tooltip.style.top = (parseFloat(box.style.top) - 5) + "px";
+          canvas.appendChild(tooltip);
+        });
+
+        box.addEventListener("mouseleave", () => {
+          const tooltip = canvas.querySelector(".action-tooltip");
+          if (tooltip) tooltip.remove();
+        });
+
+        canvas.appendChild(box);
+      });
+    }
+
+    // Atualizar transições
     step.transitions.forEach(t => {
-
-      if(step.state == "active" && t.triggered == true ) {
+      if(step.state === "active" && t.triggered) {
         t.triggered = false;
-        console.log("Transition " + t.id + " State " + t.triggered);
         step.state = "inactive";
-
         step.outputs.forEach(s => {
-          if(step.state == "inactive") {
+          if(step.state === "inactive") {
             s.state = "active";
           }
         });
-      }      
-    })
+      }
+    });
   });
 }
+
 
 function showReceptivityModal(transition, transitionBar) {
   const overlay = document.createElement("div");
@@ -471,7 +532,7 @@ function showActionsModal(step) {
     div.innerHTML = `
       <input type="text" placeholder="ID" value="${action.id || ''}" style="width: 60px; margin-right:3px;">
       <input type="text" placeholder="Type" value="${action.type || ''}" style="width: 80px; margin-right:3px;">
-      <input type="text" placeholder="Commands (csv)" value="${(action.commands || []).join(',')}" style="width: 120px; margin-right:3px;">
+      <input type="text" placeholder="Commands" value="${(action.commands || []).join(',')}" style="width: 120px; margin-right:3px;">
       <input type="text" placeholder="Qualifier" value="${action.qualifier || ''}" style="width: 80px; margin-right:3px;">
       <input type="text" placeholder="Description" value="${action.description || ''}" style="width: 100px; margin-right:3px;">
       <button class="remove-action">X</button>
@@ -517,7 +578,5 @@ function showActionsModal(step) {
   });
 }
 
-
-
 // Executar a cada 200 ms
-setInterval(atualizarVisualizacaoSteps, 100);
+setInterval(updateStepsView, 100);

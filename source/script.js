@@ -352,11 +352,11 @@ function addStepConnection(fromBox, toBox) {
   const toStep = stepsList.find(s => s.id === toId);
   if (!fromStep || !toStep) return;
 
-  if (!fromStep.outputs.includes(toStep)) {
-    fromStep.outputs.push(toStep);
+  if (!fromStep.outputs.includes(toStep.id)) {
+    fromStep.outputs.push(toStep.id);
   }
-  if (!toStep.inputs.includes(fromStep)) {
-    toStep.inputs.push(fromStep);
+  if (!toStep.inputs.includes(fromStep.id)) {
+    toStep.inputs.push(fromStep.id);
   }
 }
 
@@ -451,16 +451,13 @@ function updateStepsView() {
       if(step.state === "active" && t.triggered) {
         t.triggered = false;
         step.state = "inactive";
-        step.outputs.forEach(s => {
-          if(step.state === "inactive") {
-            s.state = "active";
-          }
+        step.outputs.forEach(stepId => {
+            stepsList[stepId-1].state = "active";
         });
       }
     });
   });
 }
-
 
 function showReceptivityModal(transition, transitionBar) {
   const overlay = document.createElement("div");
